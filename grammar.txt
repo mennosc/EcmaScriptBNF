@@ -1,1 +1,30 @@
-Test
+Some notational Conventions:
+When the subscript: [opt] is placed after a terminal or non-terminal, it means that the token is optional. The production:
+    <VariableDeclaration> ::= <BindingIdentifier> <Initializer>[opt]
+Is equivalent to:
+    <VariableDeclaration> ::= <BindingIdentifier> | <BindingIdentifier> <Initializer>
+
+
+#Source Text
+
+#whitespace:
+<SourceCharacter> ::= any ascii character
+<WhiteSpace> ::= <HorizontalTab> | <VerticalTab> | <FormFeed> | <Space>
+<HorizontalTab> ::= 9
+<VerticalTab> ::= 11
+<FormFeed> ::= 14
+<Space> ::= 32
+
+#line terminators
+<LineTerminator> ::= <LineFeed> | <CarriageReturn>
+<LineFeed> ::= 12
+<CarriageReturn> ::= 13
+<LineTerminatorSequence> ::= <LineFeed> | <CarriageReturn> | <CarriageReturn> <LineFeed> 
+
+#comments
+<Comment> ::= <MultilineComment> | <SingleLineComment>
+<MultilineComment> ::= "/*" <MultilineCommentChars> "*/"
+<MultilineCommentChars> ::= <MultiLineNotAsteriskChar> <MultilineCommentChars> | "*" <PostAsteriskCommentChars>
+<PostAsteriskCommentChars> ::= <MultilineNotForwardSlashOrAsteriskChar> <MultilineCommentChars> | "*" <PostAsteriskCommentChars>
+<MultiLineNotAsterisk> ::= <SourceCharacter> (but not '*')
+<MultilineNotForwardSlashOrAsteriskChar> ::= <SourceCharacter> (but not '*' | '/')
