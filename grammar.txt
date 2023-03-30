@@ -1,8 +1,13 @@
+Please note that this grammar only supports ascii characters
+
 Some notational Conventions:
 When the subscript: [opt] is placed after a terminal or non-terminal, it means that the token is optional. The production:
     <VariableDeclaration> ::= <BindingIdentifier> <Initializer>[opt]
 Is equivalent to:
     <VariableDeclaration> ::= <BindingIdentifier> | <BindingIdentifier> <Initializer>
+
+The notation: [a-zA-Z] means all letters, lowercase and uppercase
+The notation: [0-9] means all digits 
 
 
 #Source Text
@@ -23,8 +28,94 @@ Is equivalent to:
 
 #comments
 <Comment> ::= <MultilineComment> | <SingleLineComment>
-<MultilineComment> ::= "/*" <MultilineCommentChars> "*/"
-<MultilineCommentChars> ::= <MultiLineNotAsteriskChar> <MultilineCommentChars> | "*" <PostAsteriskCommentChars>
-<PostAsteriskCommentChars> ::= <MultilineNotForwardSlashOrAsteriskChar> <MultilineCommentChars> | "*" <PostAsteriskCommentChars>
+<MultilineComment> ::= "/*" <MultilineCommentChars>[opt] "*/"
+<MultilineCommentChars> ::= <MultiLineNotAsteriskChar> <MultilineCommentChars>[opt] | "*" <PostAsteriskCommentChars>[opt]
+<PostAsteriskCommentChars> ::= <MultilineNotForwardSlashOrAsteriskChar> <MultilineCommentChars>[opt] | "*" <PostAsteriskCommentChars>[opt]
 <MultiLineNotAsterisk> ::= <SourceCharacter> (but not '*')
 <MultilineNotForwardSlashOrAsteriskChar> ::= <SourceCharacter> (but not '*' | '/')
+
+<SingleLineComment> ::= "//" <singleLineCommentChars>[opt]
+<SingleLineCommentChars> ::= <SingleLineCommentChar> <SingleLineCommentChars>[opt]
+<SingleLineCommentChar> ::= <sourceCharacter> (but no <LineTerminator>)
+
+<HashbangComment> ::= "#!" <SingleLintComment>[opt]
+
+#identifiers
+<Identifier> ::= <IdentifierName> (but no <reservedKeyWords>)
+<PrivateIdentifier> ::= "#" <IdentifierName>
+<IdentifierName> ::= <IdentifierStartChar> | <IdentifierName> <IdentifierPartChar>
+<IdentifierStartChar> ::= "$" | "_" | [a-zA-Z]
+<IdentifierPartChar> ::= $ | [a-zA-Z0-9]
+<AsciiLetter> ::= [a-zA-Z]
+
+<ReserverKeyWords> ::= "await"|"break"|"case"|"catch"|"class"|"const"|"continue"|"debugger"|"default"|"delete"|"do"|"else"|"enum"|"export"|"extends"|"false"|"finally"|"for"|"function"|"if"|"import"|"in"|"instanceof"|"new"|"null"|"return"|"super"|"switch"|"this"|"throw"|"true"|"try"|"typeof"|"var"|"void"|"while"|"with"|"yield"
+
+#punctuators
+<Punctiator> ::= <OptionalChainingPunctuator> | <OtherPunctuator>
+<OptionalChainingPunctuator> ::= "?." (lookahead != <DecimalDigit>)
+<OtherPunctuator> ::= "{"|"("|")"|"["|"]"|"."|"..."|";"|","|"<"|">"|"<="|">="|"=="|"!="|"==="|"!=="|"+"|"-"|"*"|"%"|"**"|"++"|"--"|"<<"|">>"|">>>"|"&"|"|"|"^"|"!"|"~"|"&&"|"||"|"??"|"?"|":"|"="|"+="|"-="|"*="|"%="|"**="|"<<="|">>="|">>>="|"&="|"|="|"^="|"&&="|"||="|"??="|"=>"
+<DivPunctuator> ::= "/" | "/="
+<RightBracePunctuator> ::= "}"
+
+#Literals
+<NullLiteral> ::= "null"
+<BooleanLiteral> ::= "true" | "false"
+
+#numeric literal
+<NumericLiteralSeparator> ::= "-" (could also be _)
+<NumericLiteral> ::= <DecimalLiteral> | <DecimalBigIntegerLiteral> | <NonDecimalIntegerLiteral> | <NonDecimalIntegerLiteral> <BigIntLiteralSuffix> | <LegacyOctalIntegerLiteral>
+
+#decimal
+<DecimalBigIntegerLiteral> ::= "0" <BigIntLiteralSuffix>[opt] | <NonZeroDigit> <DecimalDigits> <BigIntLiteralSuffix> | <NonZeroDigit> <NumericLiteralSeparator> <DecimalDigits> <BigIntLiteralSuffix>
+<NonDecimalIntegerLiteral> ::= <BinaryInteger> | <OctalInteger> | <HexInteger>
+<BigIntLiteralSuffix> ::= "n"
+<DecimalLiteral> ::= <DecimalIntegerLiteral> "." <DecimalDigits>[opt] <ExponentPart>[opt] | "." <DecimalDigits> <ExponentPart>[opt] | <DecimalIntegerLiteral> <ExponentPart>[opt]
+<DecimalIntegerLiteral> ::= "0" | <NonZeroDigit> | <NonZeroDigit> <NumericLiteralSeparator>[opt] <DecimalDigits> | <NonOctalDecimalIntegerLiteral>
+<DecimalDigits> ::= <DecimalDigit> | <DecimalDigits> <DecimalDigit> | <DecimalDigits> <NumericLiteralSeparator> <DecimalDigit>
+
+<DecimalDigit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+<NonZeroDigit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+#exponent
+<ExponentPart> ::= <ExponentIndicator> <SignedInteger>
+<ExponentIndicator> ::= "e" | "E"
+<SignedInteger> ::= <DecimalDigits> | "+" <DecimalDigits> | "-" <DecimalDigits>
+
+#binary
+<BinaryIntegerLiteral> ::= "0b" <BinaryDigits> | "0B" <BinaryDigits>
+<BinaryDigits> ::= <BinaryDigit> | <BinaryDigits> <BinaryDigit> | <BinaryDigits> <NumericLiteralSeparator> <BinaryDigit>
+<BinaryDigit> ::= 0 | 1
+
+#octal
+<OctalIntegerLiteral> ::= "0o" <OctalDigits> | "0O" <OctalDigits>
+<OctalDigits> ::= <OctalDigit> | <OctalDigits> <OctalDigit> | <OctalDigits> <NumericLiteralSeparator> <OctalDigit>
+<LegacyOctalIntegerLiteral> ::= "0" <OctalDigit> | <LegacyOctalIntegerLiteral> <OctalDigit>
+<NonOctalDecimalIntegerLiteral> ::= "0" <NonOctalDigit> | <LegacyOctalLikeDecimalIntegerLiteral> <NonOctalDigit> | <NonOctalDecimalIntegerLiteral> <DecimalDigit>
+<LegacyOctalLikeDecimalIntegerLiteral> ::= "0" <OctalDigit> | <LegacyOctalLikeDecimalIntegerLiteral> <OctalDigit>
+<OctalDigit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+<NonOctalDigit> ::= 8 | 9
+
+#hex
+<HexDigits> ::= <HexDigit> | <HexDigits> <HexDigit> | <HexDigits> <NumericLiteralSeparator> <HexDigit>
+<HexDigit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
+
+#string literal
+<StringLiteral> ::= " <DoubleStringCharacters>[opt] " | ' <SingleStringCharacters>[opt] '
+<DoubleStringCharacters> ::= <DoubleStringCharacter> <DoubleStringCharacters>[opt]
+<SingleStringCharacters> ::= <SingleStringCharacter> <SingleStringCharacters>[opt]
+<DoubleStringCharacter> ::= <SourceCharacter> (but not " or \ or <LineTerminator>) | "\" <EscapeSequence> | <LineContinuation>
+<SingleStringCharacter> ::= <SourceCharacter> (but not ' or \ or <LineTerminator>) | "\" <EscapeSequence> | <LineContinuation>
+<LineContinuation> ::= "\" <LineTerminatorSequence>
+<EscapeSequence> ::= <CharacterEscapeSequence> | "0" (lookahead != <DecimalDigit>) | <LegacyOctalEscapeSequence> | <NonOctalDecimalEscapeSequence> | <HexEscapeSequence>
+<CharacterEscapeSequence> ::= <SingleEscapeCharacter> | <NonEscapeCharacter>
+<SingleEscapeCharacter> ::= ' | " | \ | b | f | n | r | t | v
+<NonEscapeCharacter> ::= <SourceCharacter> (but not <EscapeCharacter> or <LineTerminator>)
+<EscapeCharacter> ::= <SingleEscapeCharacter> | <DecimalDigit> | "x" | "u"
+<LegacyOctalEscapeSequence> ::= "0" (lookahead != <NonOctalDigit>) | <NonZeroOctalDigit> (lookahead != <OctalDigit>) | <ZeroToThree> <OctalDigit> (lookahead != <OctalDigit>) | <FourToSeven> <OctalDigit> | <ZeroToThree> <OctalDigit> <OctalDigit>
+<NonZeroOctalDigit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7
+<ZeroToThree> ::= 0 | 1 | 2 | 3
+<FourToSeven> ::= 4 | 5 | 6 | 7
+<NonOctalDecimalEscapeSequence> ::= 8 | 9
+<HexEscapeSequence> ::= "x" <HexDigit> <HexDigit>
+<Hex4Digits> ::= <HexDigit> <HexDigit> <HexDigit> <HexDigit> 
+
