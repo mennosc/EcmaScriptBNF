@@ -118,4 +118,28 @@ The notation: [0-9] means all digits
 <NonOctalDecimalEscapeSequence> ::= 8 | 9
 <HexEscapeSequence> ::= "x" <HexDigit> <HexDigit>
 <Hex4Digits> ::= <HexDigit> <HexDigit> <HexDigit> <HexDigit> 
+<EscapeSequence> ::= <LegacyOctalEscapeSequence> | <NonOctalDecimalEscapeSequence>
 
+#regular expressions
+<RegularExpressionLiteral> ::= "/"<RegularExpressionBody> "/" <RegularExpressionFlags>
+<RegularExpressionBody> ::= <RegularExpressionFirstChar> <RegularExpressionChars>
+<RegularExpressionChars> ::= <RegularExpressionsChars> <RegularExpressionChar> | empty
+<RegularExpressionFirstChar> ::= <RegularExpressionNonTerminator> (but not "*" | "/" | "\" | "[") | <RegularExpressionBackslashSequence> | <RegularExpressionClass>
+<RegularExpressionChar> ::= <RegularExpressionNonTerminator> (but not "/" | "\" | "[") | <RegularExpressionBackslashSequence> | <RegularExpressionClass>
+<RegularExpressionBackslashSequence> ::= "\" <RegularExpressionNonTerminator>
+<RegularExpressionNonTerminator> ::= <SourceCharacter> (but not <LineTerminator>)
+<RegularExpressionClass> ::= "[" <RegularExpressionClassChars> "]"
+<RegularExpressionClassChars> ::= <RegularExpressionClassChars> <RegularExpressionClassChar> | empty
+<RegularExpressionClassChar> ::= <RegularExpressionNonTerminator> (but not "]" or "\") | <RegularExpressionBackslashSequence>
+<RegularExpressionFlags> ::= <RegularExpressionFlags> <IdentifierPartChar>
+
+<Template> ::= <NoSubstitutionTemplate> | <TemplateHead>
+<NoSubstitutionTemplate> ::= "`" <TemplateCharacters>[opt] "`"
+<TemplateHead> ::= "`" <TemplateCharacters>[opt] "${"
+<TemplateSubstitutionTail> ::= <TemplateMiddle> | <TemplateTail>
+<TemplateMiddle> ::= "}" <TemplateCharacters>[opt] "${"
+<TemplateTail> ::= "}" <TemplateCharacters>[opt] "`"
+<TemplateCharacters> ::= <TemplateCharacter> <TemplateCharacters>[opt]
+<TemplateCharacter> ::= "$" (lookahead != "{") | "\" <TemplateEscapeSequence> | "\" <NotEscapeSequence> | <LineContinuation> | <LineTerminatorSequence> | <SourceCharacter> (but not ` or \ or $)
+<TemplateEscapeSequence> ::= <CharacterEscapeSequence> | "0" (lookahead != <DecimalDigit>) | <HexEscapeSequence>
+<NotEscapeSequence> ::= "0" <DecimalDigit> | <DecimalDigit> (but not 0) | "x" (lookahead != "x") | "x" <HexDigit> (lookahead != "{") | 
